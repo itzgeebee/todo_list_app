@@ -9,7 +9,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import relationship
 from flask_login import UserMixin, login_user, LoginManager, login_required, current_user, logout_user
-from forms import CreateUser, CreateNewTask
+from forms import CreateUser, CreateNewTask, LoginUser
 
 login_manager = LoginManager()
 app = Flask(__name__)
@@ -39,7 +39,7 @@ class Task(db.Model):
 class User(UserMixin, db.Model):
     __tablename__ = "users"
     id = db.Column(db.Integer, primary_key=True)
-    mail = db.Column(db.String(250), unique=True, nullable=False)
+    email = db.Column(db.String(250), unique=True, nullable=False)
     password = db.Column(db.String(250), nullable=False)
     name = db.Column(db.String(250), nullable=False)
     all_tasks = db.relationship("Task", back_populates="author")
@@ -64,54 +64,98 @@ def load_user(id):
     return User.query.get(id)
 
 
-@app.route('/')
+@app.route('/', methods=["GET", "POST"])
 def home():
-    tasks = Task.query.all()
+    not_started = Task.query.filter_by(status="Not Started").all()
+    print(not_started)
+    in_progress = Task.query.filter_by(status="In progress").all()
+    completed = Task.query.filter_by(status="Completed").all()
     task_form = CreateNewTask()
     user_form = CreateUser()
+    login_form = LoginUser()
+
+
     if task_form.validate_on_submit():
+
         new_task = Task(
             title=task_form.task.data,
             start_date=task_form.start_date.data,
             end_date=task_form.end_date.data,
             priority=task_form.priority.data,
-            tag=task_form.tag.data
+            tag=task_form.tag.data,
+            author=current_user
         )
-    if user_form.validate_on_submit():
-        redirect(url_for("register", ))
-    return render_template("index.html", all_tasks=tasks, logged_in=current_user.is_authenticated,
-                           task_form=task_form, user_form=user_form)
+        db.session.add(new_task)
+        db.session.commit()
+    elif user_form.validate_on_submit():
+        name = user_form.name.data
+        password = user_form.password.data
+        confirm = user_form.confirm_password.data
+        email = user_form.mail.data
 
-@app.route('/register', methods=["GET", "POST"])
-def register():
-    form = CreateUserForm()
-    if form.validate_on_submit():
-        email = form.email.data
-        password = form.password.data
-        confirm_password =form.confirm_password.data
-        if confirm_password==password:
+        if confirm == password:
 
             new_user = User(email=email,
                             password=generate_password_hash(password, method='pbkdf2'
-                                                                                       ':sha256',
+                                                                             ':sha256',
                                                             salt_length=8),
-                            name=form.name.data
+                            name=name
                             )
             try:
                 db.session.add(new_user)
                 db.session.commit()
             except IntegrityError:
                 error = "email already exists"
-                return redirect(url_for("login", error=error))
+                return redirect(url_for("home", error=error))
             else:
 
                 login_user(new_user, remember=True)
-                return redirect(url_for("home"))
+
+                return redirect(url_for("home", logged_in=current_user.is_authenticated))
         else:
             flash("Passwords do not match, try again")
-            return redirect(url_for("register"))
-    return render_template("register.html", form=form, logged_in=current_user.is_authenticated)
+    elif login_form.validate_on_submit():
+        email = login_form.mail.data
+        password = login_form.password.data
+        user_email = email
+        user_password = password
+        user = User.query.filter_by(email=user_email).first()
+        if not user:
+            error = "Invalid email"
+        else:
+            if check_password_hash(pwhash=user.password, password=user_password):
+                login_user(user, remember=True)
+                return redirect(url_for("home", name=user.name,
+                                        logged_in=current_user.is_authenticated))
+            else:
+                error = "Invalid password"
+    # elif update_form.validate_on_submit():
+    #     task_id = request.args.get("id")
+    #     task_to_update = Task.query.get(task_id)
+    #     task_to_update.status = update_form.status.data
+    #     return render_template("home")
 
+
+
+    return render_template("index.html", ns=not_started, in_progress=in_progress,
+                           completed=completed,
+                           logged_in=current_user.is_authenticated,
+                           task_form=task_form, user_form=user_form, login_form=login_form,
+                           )
+
+# @app.route("/update-task", methods=["GET","PATCH"])
+# def update():
+#     task_id = request.args.get("id")
+#     task_to_update = Task.query.get(task_id)
+#     if task_to_update:
+
+
+
+
+@app.route("/logout")
+def logout():
+    logout_user()
+    return redirect(url_for('home'))
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=5000, debug=True)
