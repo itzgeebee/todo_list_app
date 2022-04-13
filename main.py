@@ -9,7 +9,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import relationship
 from flask_login import UserMixin, login_user, LoginManager, login_required, current_user, logout_user
-from forms import CreateUser, CreateNewTask, LoginUser
+from forms import CreateUser, CreateNewTask, LoginUser, UpdateStatus
 
 login_manager = LoginManager()
 app = Flask(__name__)
@@ -73,6 +73,7 @@ def home():
     task_form = CreateNewTask()
     user_form = CreateUser()
     login_form = LoginUser()
+    update_status = UpdateStatus()
 
 
     if task_form.validate_on_submit():
@@ -87,6 +88,7 @@ def home():
         )
         db.session.add(new_task)
         db.session.commit()
+        return redirect(url_for("home"))
     elif user_form.validate_on_submit():
         name = user_form.name.data
         password = user_form.password.data
@@ -129,33 +131,28 @@ def home():
                                         logged_in=current_user.is_authenticated))
             else:
                 error = "Invalid password"
-    # elif update_form.validate_on_submit():
-    #     task_id = request.args.get("id")
-    #     task_to_update = Task.query.get(task_id)
-    #     task_to_update.status = update_form.status.data
-    #     return render_template("home")
-
-
+    elif update_status.validate_on_submit():
+        status = update_status.status.data
+        task_id = update_status.task_id.data
+        task_to_update = Task.query.get(task_id)
+        task_to_update.status = status
+        print(task_id)
+        print(status)
+        db.session.commit()
+        return redirect(url_for("home"))
 
     return render_template("index.html", ns=not_started, in_progress=in_progress,
                            completed=completed,
                            logged_in=current_user.is_authenticated,
                            task_form=task_form, user_form=user_form, login_form=login_form,
-                           )
-
-# @app.route("/update-task", methods=["GET","PATCH"])
-# def update():
-#     task_id = request.args.get("id")
-#     task_to_update = Task.query.get(task_id)
-#     if task_to_update:
-
-
+                           update_form=update_status)
 
 
 @app.route("/logout")
 def logout():
     logout_user()
     return redirect(url_for('home'))
+
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=5000, debug=True)

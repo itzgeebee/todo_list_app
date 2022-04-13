@@ -14,31 +14,23 @@
         {{i.title}}
       </div>
       <ul class="list-group list-group-flush">
-        <li class="list-group-item">{{i.start_date.date}} | {{i.end_date.date}}</li>
+        <li class="list-group-item">{{i.start_date}} | {{i.end_date}}</li>
         <li class="list-group-item">Priority: {{i.priority}} | <small>tags {{i.tag}}</small></li>
         <li class="list-group-item">
-         <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal3">
+         <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal{{i.id + 2}}">
           Move task
         </button>
 
         <!-- Modal -->
-        <div class="modal fade" id="exampleModal3" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal fade" id="exampleModal{{i.id + 2}}" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
           <div class="modal-dialog">
             <div class="modal-content">
               <div class="modal-header">
-                <h5 class="modal-title" id="exampleModalLabel3">Sign up</h5>
+                <h5 class="modal-title" id="exampleModalLabel{{i.id + 2}}">Move task | Task ID: {{i.id}}</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
               </div>
               <div class="modal-body">
-                <form class="d-flex" method="post" name="update-form" action="">
-<!--                 <input class="form-control me-2" type="search" placeholder=" search cafe or location" aria-label="Search" name="search">-->
-                      <select class="form-select" aria-label="Default select example">
-                        <option value="0">Not started</option>
-                        <option value="1">In progress</option>
-                        <option value="2">Completed</option>
-                      </select>
-                    <button class="btn btn-outline-dark" value="submit_update" type="submit" name="submit_btn">Update</button>
-                </form>
+                        {{ wtf.quick_form(update_form, novalidate=True, button_map={"submit": "primary"}) }}
               </div>
               <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -85,9 +77,27 @@
         {{i.title}}
       </div>
       <ul class="list-group list-group-flush">
-        <li class="list-group-item">{{i.start_date.date}} | {{i.end_date.date}}</li>
+        <li class="list-group-item">{{i.start_date}} | {{i.end_date}}</li>
         <li class="list-group-item">Priority: {{i.priority}} | <small>tags {{i.tag}}</small></li>
-        <li class="list-group-item">Move</li>
+        <li class="list-group-item">
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal{{i.id + 2}}">
+          Move task
+        </button>
+
+        <!-- Modal -->
+        <div class="modal fade" id="exampleModal{{i.id + 2}}" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel{{i.id + 2}}">Move task | Task ID: {{i.id}}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body">
+                        {{ wtf.quick_form(update_form, novalidate=True, button_map={"submit": "primary"}) }}
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </li>
       </ul>
     </div>
       {%endif%}
@@ -103,9 +113,28 @@
         {{i.title}}
       </div>
       <ul class="list-group list-group-flush">
-        <li class="list-group-item">{{i.start_date.date}} | {{i.end_date.date}}</li>
+        <li class="list-group-item">{{i.start_date}} | {{i.end_date}}</li>
         <li class="list-group-item">Priority: {{i.priority}} | <small>tags {{i.tag}}</small></li>
-        <li class="list-group-item">Move</li>
+        <li class="list-group-item">
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal{{i.id + 2}}">
+          Move task
+        </button>
+
+        <!-- Modal -->
+        <div class="modal fade" id="exampleModal{{i.id + 2}}" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel{{i.id + 2}}">Move task | Task ID: {{i.id}} </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body">
+                  {{ wtf.quick_form(update_form, novalidate=True, button_map={"submit": "primary"}) }}
+
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </li>
       </ul>
     </div>
       {%endif%}

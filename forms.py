@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, PasswordField, EmailField, TextAreaField, BooleanField, DateField, \
-    SelectField
+    SelectField, IntegerField
 from wtforms.validators import DataRequired, URL, Length
 
 
@@ -9,7 +9,7 @@ class CreateNewTask(FlaskForm):
     start_date = DateField("Start date", validators=[DataRequired()])
     end_date = DateField("End date", validators=[DataRequired()])
     priority = SelectField("Priority", choices=["High", "Medium", "Low"])
-    tag = StringField("tag", validators=[Length(min=3, max=10)])
+    tag = StringField("tag")
     submit = SubmitField("Add task")
 
 class CreateUser(FlaskForm):
@@ -25,6 +25,8 @@ class LoginUser(FlaskForm):
     password = PasswordField("Password", validators=[DataRequired()])
     submit = SubmitField("Sign in")
 
-# class UpdateStatus(FlaskForm):
-#     task_id
-#     status = SelectField("status", choices=["Not started", "In progress", "Completed"])
+class UpdateStatus(FlaskForm):
+    task_id = IntegerField("task_id", validators=[DataRequired()])
+    status = SelectField("status", choices=["Not Started", "In progress", "Completed"])
+    submit = SubmitField("Update")
+
