@@ -1,25 +1,40 @@
 {% include "header.html" %}
 {% import "bootstrap/wtf.html" as wtf %}
-<section>
+
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <ul class=flashes>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+        </ul>
+      {% endif %}
+    {% endwith %}
+
+<section class="main-content">
   <div class="container">
+    <h3 style="color: red;">{{error_msg}}</h3>
   <div class="row">
-    <div class="col-lg-4 col-sm-12">
-      <p>Not started</p>
+    <div class="col-lg-4 col-md-6 col-sm-12">
+      <h4>Not started</h4>
 
 
       {% for i in ns:%}
       {% if current_user.id == i.author_id: %}
       <div class="card" style="width: 18rem;">
       <div class="card-header">
-        {{i.title}}
+        <h5>{{i.title}}</h5>
       </div>
       <ul class="list-group list-group-flush">
-        <li class="list-group-item">{{i.start_date}} | {{i.end_date}}</li>
-        <li class="list-group-item">Priority: {{i.priority}} | <small>tags {{i.tag}}</small></li>
+        <li class="list-group-item"><strong>Start date: </strong> {{i.start_date.strftime("%d-%m-%Y")}} </li>
+        <li class="list-group-item"><strong>Due date: </strong> {{i.end_date.strftime("%d-%m-%Y")}}</li>
+        <li class="list-group-item"><strong>Priority: </strong>{{i.priority}} </li>
+        <li class="list-group-item"><small>Tags: <em>{{i.tag}}</em></small></li>
         <li class="list-group-item">
-         <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal{{i.id + 2}}">
+         <button type="button" class="btn btn-outline-dark" data-bs-toggle="modal" data-bs-target="#exampleModal{{i.id + 2}}">
           Move task
         </button>
+         <a class="btn btn-outline-dark delete" href="{{url_for('delete', task_id=i.id)}}" role="button"><i class="fa-solid fa-trash-can"></i></a>
 
         <!-- Modal -->
         <div class="modal fade" id="exampleModal{{i.id + 2}}" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
@@ -30,7 +45,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
               </div>
               <div class="modal-body">
-                        {{ wtf.quick_form(update_form, novalidate=True, button_map={"submit": "primary"}) }}
+                        {{ wtf.quick_form(update_form, novalidate=True, button_map={"submit": "outline-dark"}) }}
               </div>
               <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -45,7 +60,7 @@
     </div>
       {%endif%}
       {%endfor%}
-      <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal2">
+      <button type="button" class="btn btn-outline-dark plus" data-bs-toggle="modal" data-bs-target="#exampleModal2">
           <i class="fa-solid fa-circle-plus"></i>
       </button>
       <div class="modal fade" id="exampleModal2" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
@@ -56,7 +71,7 @@
               <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-              {{ wtf.quick_form(task_form, novalidate=True, button_map={"submit": "primary"}) }}
+              {{ wtf.quick_form(task_form, novalidate=True, button_map={"submit": "outline-dark"}) }}
 
             </div>
             <div class="modal-footer">
@@ -69,21 +84,23 @@
     </div>
 
     <div class="col-lg-4 col-md-6 col-sm-12">
-      <p>In progress</p>
+      <h4>In progress</h4>
       {% for i in in_progress:%}
       {% if current_user.id == i.author_id: %}
       <div class="card" style="width: 18rem;">
       <div class="card-header">
-        {{i.title}}
+        <h5>{{i.title}}</h5>
       </div>
       <ul class="list-group list-group-flush">
-        <li class="list-group-item">{{i.start_date}} | {{i.end_date}}</li>
-        <li class="list-group-item">Priority: {{i.priority}} | <small>tags {{i.tag}}</small></li>
+        <li class="list-group-item"><strong>Start date: </strong> {{i.start_date.strftime("%d-%m-%Y")}} </li>
+        <li class="list-group-item"><strong>Due date: </strong> {{i.end_date.strftime("%d-%m-%Y")}}</li>
+        <li class="list-group-item"><strong>Priority: </strong>{{i.priority}} </li>
+        <li class="list-group-item"><small>Tags: <em>{{i.tag}}</em></small></li>
         <li class="list-group-item">
-        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal{{i.id + 2}}">
+        <button type="button" class="btn btn-outline-dark" data-bs-toggle="modal" data-bs-target="#exampleModal{{i.id + 2}}">
           Move task
         </button>
-
+            <a class="btn btn-outline-dark delete" href="{{url_for('delete', task_id=i.id)}}" role="button"><i class="fa-solid fa-trash-can"></i></a>
         <!-- Modal -->
         <div class="modal fade" id="exampleModal{{i.id + 2}}" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
           <div class="modal-dialog">
@@ -93,7 +110,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
               </div>
               <div class="modal-body">
-                        {{ wtf.quick_form(update_form, novalidate=True, button_map={"submit": "primary"}) }}
+                        {{ wtf.quick_form(update_form, novalidate=True, button_map={"submit": "outline-dark"}) }}
               </div>
               <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -104,21 +121,24 @@
       {%endfor%}
     </div>
 
-    <div class="col-lg-4 col-sm-12">
-      <p>Completed</p>
+    <div class="col-lg-4 col-md-6 col-sm-12">
+      <h4>Completed</h4>
       {% for i in completed:%}
       {% if current_user.id == i.author_id: %}
       <div class="card" style="width: 18rem;">
       <div class="card-header">
-        {{i.title}}
+        <h5>{{i.title}}</h5>
       </div>
       <ul class="list-group list-group-flush">
-        <li class="list-group-item">{{i.start_date}} | {{i.end_date}}</li>
-        <li class="list-group-item">Priority: {{i.priority}} | <small>tags {{i.tag}}</small></li>
+        <li class="list-group-item"><strong>Start date: </strong> {{i.start_date.strftime("%d-%m-%Y")}} </li>
+        <li class="list-group-item"><strong>Due date: </strong> {{i.end_date.strftime("%d-%m-%Y")}}</li>
+        <li class="list-group-item"><strong>Priority: </strong>{{i.priority}} </li>
+        <li class="list-group-item"><small>Tags: <em>{{i.tag}}</em></small></li>
         <li class="list-group-item">
-            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal{{i.id + 2}}">
-          Move task
-        </button>
+            <button type="button" class="btn btn-outline-dark" data-bs-toggle="modal" data-bs-target="#exampleModal{{i.id + 2}}">
+            Move task
+          </button>
+          <a class="btn btn-outline-dark delete" href="{{url_for('delete', task_id=i.id)}}" role="button"><i class="fa-solid fa-trash-can"></i></a>
 
         <!-- Modal -->
         <div class="modal fade" id="exampleModal{{i.id + 2}}" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
@@ -129,7 +149,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
               </div>
               <div class="modal-body">
-                  {{ wtf.quick_form(update_form, novalidate=True, button_map={"submit": "primary"}) }}
+                  {{ wtf.quick_form(update_form, novalidate=True, button_map={"submit": "outline-dark"}) }}
 
               </div>
               <div class="modal-footer">

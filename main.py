@@ -1,4 +1,4 @@
-from functools import wraps
+
 import os
 from flask import Flask, render_template, redirect, url_for, flash, request
 from flask_bootstrap import Bootstrap
@@ -10,6 +10,7 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import relationship
 from flask_login import UserMixin, login_user, LoginManager, login_required, current_user, logout_user
 from forms import CreateUser, CreateNewTask, LoginUser, UpdateStatus
+from flask_gravatar import Gravatar
 
 login_manager = LoginManager()
 app = Flask(__name__)
@@ -21,6 +22,14 @@ Bootstrap(app)
 app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///todo.db"
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
+gravatar = Gravatar(app,
+                    size=30,
+                    rating='g',
+                    default='retro',
+                    force_default=False,
+                    force_lower=False,
+                    use_ssl=False,
+                    base_url=None)
 
 
 class Task(db.Model):
@@ -47,18 +56,6 @@ class User(UserMixin, db.Model):
 
 # db.create_all()
 
-
-# decorator function for admin login
-def admin_only(f):
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        if current_user.id != 1 or not current_user.is_authenticated:
-            return abort(403, description="Forbidden! You do not have access to this page")
-        return f(*args, **kwargs)
-
-    return decorated_function
-
-
 @login_manager.user_loader
 def load_user(id):
     return User.query.get(id)
@@ -67,28 +64,34 @@ def load_user(id):
 @app.route('/', methods=["GET", "POST"])
 def home():
     not_started = Task.query.filter_by(status="Not Started").all()
-    print(not_started)
     in_progress = Task.query.filter_by(status="In progress").all()
     completed = Task.query.filter_by(status="Completed").all()
     task_form = CreateNewTask()
     user_form = CreateUser()
     login_form = LoginUser()
     update_status = UpdateStatus()
+    error_msg = request.args.get("error_msg")
+    if error_msg is None:
+        error_msg = ""
+
 
 
     if task_form.validate_on_submit():
-
-        new_task = Task(
-            title=task_form.task.data,
-            start_date=task_form.start_date.data,
-            end_date=task_form.end_date.data,
-            priority=task_form.priority.data,
-            tag=task_form.tag.data,
-            author=current_user
-        )
-        db.session.add(new_task)
-        db.session.commit()
-        return redirect(url_for("home"))
+        if current_user.is_authenticated:
+            new_task = Task(
+                title=task_form.task.data,
+                start_date=task_form.start_date.data,
+                end_date=task_form.end_date.data,
+                priority=task_form.priority.data,
+                tag=task_form.tag.data,
+                author=current_user
+            )
+            db.session.add(new_task)
+            db.session.commit()
+            flash('Task created successfully')
+        else:
+            error_msg = "Sign up or login to add task"
+        return redirect(url_for("home", error_msg=error_msg))
     elif user_form.validate_on_submit():
         name = user_form.name.data
         password = user_form.password.data
@@ -107,15 +110,16 @@ def home():
                 db.session.add(new_user)
                 db.session.commit()
             except IntegrityError:
-                error = "email already exists"
-                return redirect(url_for("home", error=error))
+                error_msg = "email already exists, Kindly login to continue"
+                return redirect(url_for("home", error_msg=error_msg))
             else:
-
                 login_user(new_user, remember=True)
-
+                flash(f'Welcome {current_user.name}')
                 return redirect(url_for("home", logged_in=current_user.is_authenticated))
         else:
-            flash("Passwords do not match, try again")
+            error_msg= "Passwords do not match, try again"
+            return redirect(url_for("home", error_msg=error_msg))
+
     elif login_form.validate_on_submit():
         email = login_form.mail.data
         password = login_form.password.data
@@ -123,34 +127,46 @@ def home():
         user_password = password
         user = User.query.filter_by(email=user_email).first()
         if not user:
-            error = "Invalid email"
+            error_msg = "Invalid email"
+            return redirect(url_for("home", error_msg=error_msg))
         else:
             if check_password_hash(pwhash=user.password, password=user_password):
                 login_user(user, remember=True)
+                flash('You were successfully logged in')
                 return redirect(url_for("home", name=user.name,
                                         logged_in=current_user.is_authenticated))
             else:
-                error = "Invalid password"
+                error_msg = "Invalid password"
+                return redirect(url_for("home", error_msg=error_msg))
     elif update_status.validate_on_submit():
         status = update_status.status.data
         task_id = update_status.task_id.data
         task_to_update = Task.query.get(task_id)
         task_to_update.status = status
-        print(task_id)
-        print(status)
         db.session.commit()
+        flash('Status updated')
         return redirect(url_for("home"))
 
     return render_template("index.html", ns=not_started, in_progress=in_progress,
                            completed=completed,
                            logged_in=current_user.is_authenticated,
                            task_form=task_form, user_form=user_form, login_form=login_form,
-                           update_form=update_status)
+                           update_form=update_status, error_msg=error_msg)
 
 
 @app.route("/logout")
 def logout():
     logout_user()
+    flash('Logged out. log in to see and update your tasks')
+    return redirect(url_for('home'))
+
+@app.route("/delete", )
+def delete():
+    task_id = request.args.get("task_id")
+    task_to_delete = Task.query.get(task_id)
+    db.session.delete(task_to_delete)
+    db.session.commit()
+    flash('Task has been deleted')
     return redirect(url_for('home'))
 
 
