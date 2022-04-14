@@ -1,0 +1,53 @@
+h4{
+  margin-bottom: 4%;
+  padding-bottom: 3%;
+  padding-top: 3%;
+  position: sticky;
+  top: 0;
+  padding-left: 4%;
+}
+/* h5{
+  font-size: 2rem;
+} */
+footer{
+  padding-top: 5%;
+  text-align: center;
+}
+
+/* .btn{
+  font-size: 1.5rem;
+} */
+.navig{
+  padding-left: 4%;
+  padding-right: 4%;
+}
+.nav-item{
+  padding-left: 4%;
+  padding-right: 4%;
+}
+/* .modal-body{
+  padding-top: 2%;
+  padding-bottom: 2%;
+} */
+
+
+.main-content{
+  padding-left: 10%;
+  padding-right: 8%;
+}
+.card{
+  margin-top: 4%;
+  margin-bottom: 4%;
+  margin-left: 3%;
+  margin-right: 3%;
+}
+
+.delete{
+  margin-left:  42%;
+}
+.plus{
+  margin-left: 3%
+}
+/* .list-group{
+  font-size: 1.5rem;
+} */
