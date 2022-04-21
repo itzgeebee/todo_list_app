@@ -11,6 +11,7 @@ from sqlalchemy.orm import relationship
 from flask_login import UserMixin, login_user, LoginManager, login_required, current_user, logout_user
 from forms import CreateUser, CreateNewTask, LoginUser, UpdateStatus
 from flask_gravatar import Gravatar
+import os
 
 login_manager = LoginManager()
 app = Flask(__name__)
@@ -19,7 +20,7 @@ login_manager.init_app(app)
 app.config['SECRET_KEY'] = "secretkey"
 Bootstrap(app)
 
-app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///todo.db"
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get("DATABASE"), "sqlite:///todo.db"
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 gravatar = Gravatar(app,
