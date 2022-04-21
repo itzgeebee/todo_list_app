@@ -20,7 +20,7 @@ login_manager.init_app(app)
 app.config['SECRET_KEY'] = "secretkey"
 Bootstrap(app)
 
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get("DATABASE", "sqlite:///todo.db")
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get("DB_URL", "sqlite:///todo.db")
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 gravatar = Gravatar(app,
