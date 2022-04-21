@@ -55,7 +55,7 @@ class User(UserMixin, db.Model):
     all_tasks = db.relationship("Task", back_populates="author")
 
 
-# db.create_all()
+db.create_all()
 
 @login_manager.user_loader
 def load_user(id):
