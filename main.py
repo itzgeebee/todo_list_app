@@ -161,7 +161,8 @@ def logout():
     flash('Logged out. log in to see and update your tasks')
     return redirect(url_for('home'))
 
-@app.route("/delete", )
+@app.route("/delete")
+@login_required
 def delete():
     task_id = request.args.get("task_id")
     task_to_delete = Task.query.get(task_id)
