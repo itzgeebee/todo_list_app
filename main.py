@@ -1,6 +1,7 @@
-
 import os
-from flask import Flask, render_template, redirect, url_for, flash, request
+from flask import (Flask, render_template,
+                   redirect, url_for,
+                   flash, request)
 from flask_bootstrap import Bootstrap
 from datetime import date, datetime
 from sqlalchemy.exc import IntegrityError
@@ -8,8 +9,11 @@ from werkzeug.exceptions import abort
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import relationship
-from flask_login import UserMixin, login_user, LoginManager, login_required, current_user, logout_user
-from forms import CreateUser, CreateNewTask, LoginUser, UpdateStatus
+from flask_login import (UserMixin, login_user,
+                         LoginManager, login_required,
+                         current_user, logout_user)
+from forms import (CreateUser, CreateNewTask,
+                   LoginUser, UpdateStatus)
 from flask_gravatar import Gravatar
 import os
 
@@ -57,6 +61,7 @@ class User(UserMixin, db.Model):
 
 db.create_all()
 
+
 @login_manager.user_loader
 def load_user(id):
     return User.query.get(id)
@@ -64,18 +69,23 @@ def load_user(id):
 
 @app.route('/', methods=["GET", "POST"])
 def home():
+    # Queries
     not_started = Task.query.filter_by(status="Not Started").all()
     in_progress = Task.query.filter_by(status="In progress").all()
     completed = Task.query.filter_by(status="Completed").all()
+
+    # Forms
     task_form = CreateNewTask()
     user_form = CreateUser()
     login_form = LoginUser()
     update_status = UpdateStatus()
+
+    # Check if request contains error message
     error_msg = request.args.get("error_msg")
     if error_msg is None:
         error_msg = ""
 
-
+    # Check if request contains task form and create new task if user is authenticated
 
     if task_form.validate_on_submit():
         if current_user.is_authenticated:
@@ -93,6 +103,8 @@ def home():
         else:
             error_msg = "Sign up or login to add task"
         return redirect(url_for("home", error_msg=error_msg))
+
+    # Create New User
     elif user_form.validate_on_submit():
         name = user_form.name.data
         password = user_form.password.data
@@ -104,11 +116,11 @@ def home():
             new_user = User(email=email,
                             password=generate_password_hash(password, method='pbkdf2'
                                                                              ':sha256',
-                                                            salt_length=8),
+                                                            salt_length=16),
                             name=name
                             )
+            db.session.add(new_user)
             try:
-                db.session.add(new_user)
                 db.session.commit()
             except IntegrityError:
                 error_msg = "email already exists, Kindly login to continue"
@@ -118,9 +130,10 @@ def home():
                 flash(f'Welcome {current_user.name}')
                 return redirect(url_for("home", logged_in=current_user.is_authenticated))
         else:
-            error_msg= "Passwords do not match, try again"
+            error_msg = "Passwords do not match, try again"
             return redirect(url_for("home", error_msg=error_msg))
 
+    # Log in
     elif login_form.validate_on_submit():
         email = login_form.mail.data
         password = login_form.password.data
@@ -161,6 +174,7 @@ def logout():
     flash('Logged out. log in to see and update your tasks')
     return redirect(url_for('home'))
 
+
 @app.route("/delete")
 @login_required
 def delete():
@@ -173,4 +187,4 @@ def delete():
 
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=False)

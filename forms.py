@@ -12,6 +12,7 @@ class CreateNewTask(FlaskForm):
     tag = StringField("tag")
     submit = SubmitField("Add task")
 
+
 class CreateUser(FlaskForm):
     mail = EmailField("Email", validators=[DataRequired()])
     password = PasswordField("Password", validators=[DataRequired(), Length(min=6, max=25)], id="password_field")
@@ -20,13 +21,14 @@ class CreateUser(FlaskForm):
     name = StringField("Name", validators=[DataRequired(), Length(min=2)])
     submit = SubmitField("Register")
 
+
 class LoginUser(FlaskForm):
     mail = EmailField("Email", validators=[DataRequired()])
     password = PasswordField("Password", validators=[DataRequired()])
     submit = SubmitField("Sign in")
 
+
 class UpdateStatus(FlaskForm):
     task_id = IntegerField("task_id", validators=[DataRequired()])
     status = SelectField("status", choices=["Not Started", "In progress", "Completed"])
     submit = SubmitField("Update")
-
